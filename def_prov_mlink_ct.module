@@ -1,0 +1,107 @@
+<?php
+
+/**
+ * Implements hook_menu().
+ */
+function def_prov_mlink_ct_menu(){
+  $items = array();
+
+  $items['admin/config/def_prov_mlink_ct'] = array(
+    'title' => 'Default Provide Menu Link per Content Type',
+    'description' => 'Configure "Provide a menu link" checkbox default value per content type',
+    'position' => 'right',
+    'weight' => -5,
+    'page callback' => 'system_admin_menu_block_page',
+    'access arguments' => array('administer site configuration'),
+    'file' => 'system.admin.inc',
+    'file path' => drupal_get_path('module', 'system'),
+  );
+  
+  $items['admin/config/def_prov_mlink_ct/settings'] = array(
+    'title' => 'Default Provide Menu Link per Content Type',
+    'description' => 'Configure "Provide a menu link" checkbox default value per content type',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('def_prov_mlink_ct_admin_settings'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+    'file' => 'def_prov_mlink_ct.admin.inc',
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_enable().
+ */
+function def_prov_mlink_ct_enable() {
+    db_update('system')
+    ->fields(array('weight' => 20))
+    ->condition('type', 'module')
+    ->condition('name', 'def_prov_mlink_ct')
+    ->execute();
+}
+
+/**
+ * Check by default "Provide a menu link" checkbox on node add pages according to configuration
+ * 
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function def_prov_mlink_ct_form_node_form_alter(&$form, &$form_state, $form_id) {
+
+  $config = def_prov_mlink_ct_get_config();
+
+  if(preg_match('/_node_form$/', $form_id) == 1) {
+
+    $content_type = $form['type']['#value'];
+
+    if(!isset($form['nid']['#value'])) {
+      $form['menu']['enabled']['#default_value'] = ($config[$content_type]=="1") ? 1 : 0;
+    }
+  }
+}
+
+/**
+ * Returns module configuration
+ */
+function def_prov_mlink_ct_get_config() {
+  try {
+    $query = db_select('def_prov_mlink_ct_config', 'n');
+    $query->fields('n',array('id','content_type','enabled'));
+    $result = $query->execute()->fetchAll();
+
+  } catch (Exception $e) {
+    watchdog('def_prov_mlink_ct',$e->getMessage());
+    return "-1";
+  }
+
+  if(isset($result) && is_array($result)) {
+
+    $conf_hash = array();
+    foreach ($result as $obj) {
+      $conf_hash[$obj->content_type] = $obj->enabled;
+    }
+
+    return $conf_hash;
+  } else {
+    return "-1";
+  }
+}
+
+/**
+ * Save all configuration
+ */
+function def_prov_mlink_ct_save_config($config) {
+
+  $query = db_insert('def_prov_mlink_ct_config')->fields(array('content_type', 'enabled'));
+
+  foreach ($config as $record) {
+    $query->values($record);
+  }
+  
+  try {
+    db_delete('def_prov_mlink_ct_config')->execute();
+    $query->execute();
+  } catch (Exception $e) {
+    watchdog('def_prov_mlink_ct',$e->getMessage());
+  }
+}

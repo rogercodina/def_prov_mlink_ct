@@ -1,0 +1,6 @@
+name = Default Provide Menu Link per Content Type
+description = This Drupal 7 module allows you to have "Provide menu link" checkbox checked by default on node add pages depending on Content Type
+version = "7.x-1.0"
+core = "7.x"
+package = "Administration"
+configure = admin/config/def_prov_mlink_ct/settings

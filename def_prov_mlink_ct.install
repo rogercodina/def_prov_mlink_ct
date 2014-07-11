@@ -1,0 +1,40 @@
+<?php
+
+function def_prov_mlink_ct_schema_install() {
+  drupal_install_schema('def_prov_mlink_ct');
+}
+
+function def_prov_mlink_ct_schema_uninstall() {
+  drupal_uninstall_schema('def_prov_mlink_ct');
+}
+
+function def_prov_mlink_ct_schema() {
+ $schema = array();
+  
+ $schema['def_prov_mlink_ct_config'] = array(
+    'description' => 'Module configuration',
+    'fields' => array(
+      'id' => array(
+        'description' => 'Primary key: ID de registro.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'content_type' => array(
+        'description' => 'CT machine name',
+        'type' => 'text',
+        'not null' => TRUE
+      ),
+      'enabled' => array(
+        'description' => 'Indicates if checkbox is enabled by default',
+        'type' => 'int',
+        'length' => 1,
+        'not null' => TRUE,
+        'default' => '0',
+      )
+    ),
+    'primary key' => array('id')
+  );
+ 
+  return $schema;
+}
