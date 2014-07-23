@@ -55,6 +55,7 @@ function def_prov_mlink_ct_form_node_form_alter(&$form, &$form_state, $form_id) 
     $content_type = $form['type']['#value'];
 
     if(!isset($form['nid']['#value'])) {
+      $config[$content_type] = (isset($config[$content_type])) ? $config[$content_type] : 0;
       $form['menu']['enabled']['#default_value'] = ($config[$content_type]=="1") ? 1 : 0;
     }
   }
